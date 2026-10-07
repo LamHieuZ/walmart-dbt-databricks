@@ -158,9 +158,3 @@ ingest → source_freshness → silver_technical → silver_business → silver_
 | `gold_dimensions` | `dbt snapshot` |
 | `gold_facts` | `dbt run --select gold.Fact` |
 
-
-
-
-## Bảo mật
-
-`.env`, `walmart_dbt/profiles.yml` đều nằm trong `.gitignore`. 
