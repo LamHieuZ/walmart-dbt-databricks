@@ -1,0 +1,3 @@
+{
+    "dbt.profilesDirOverride": "${workspaceFolder}/walmart_dbt"
+}
