@@ -4,6 +4,8 @@ Pipeline dữ liệu end-to-end cho bộ dữ liệu bán lẻ Walmart (giả l�
 
 ## Kiến trúc
 
+![Kiến trúc pipeline](docs/architecture.svg)
+
 ```
 CSV files
    │  walmart_dataset/load_data.py
@@ -121,19 +123,7 @@ uv run python walmart_dataset/load_data.py
 
 ### 4. dbt
 Tạo `walmart_dbt/profiles.yml` (đã gitignore):
-```yaml
-walmart_dbt:
-  target: dev
-  outputs:
-    dev:
-      type: databricks
-      host: <workspace>.cloud.databricks.com
-      http_path: /sql/1.0/warehouses/<warehouse_id>
-      token: <personal_access_token>
-      catalog: walmart
-      schema: dbt_schema
-      threads: 1
-```
+
 Kiểm tra và chạy:
 ```powershell
 cd walmart_dbt
@@ -168,15 +158,9 @@ ingest → source_freshness → silver_technical → silver_business → silver_
 | `gold_dimensions` | `dbt snapshot` |
 | `gold_facts` | `dbt run --select gold.Fact` |
 
-dbt trong container dùng `--target-path /tmp/dbt_target` để không đọc lẫn cache parse của dbt trên Windows.
 
-## Hạn chế đã biết
 
-- **`obt_b` bị nhân dòng**: JOIN nhân viên theo `store_id` khiến mỗi order item lặp ~10 lần (≈250 nghìn dòng). Các model `eph_*` dùng `DISTINCT` nên dim/fact vẫn đúng, nhưng không nên tính tổng trực tiếp trên `obt_b`.
-- **Freshness**: dữ liệu là giả lập (có timestamp ở tương lai), nên `dbt source freshness` chưa phản ánh đúng thời điểm nạp; chưa cấu hình `loaded_at_field`.
-- **Silver incremental**: nếu đổi logic lọc (ví dụ bỏ `is_active = 'Y'`), cần chạy `dbt build --select silver --full-refresh` một lần để nạp lại dữ liệu cũ.
-- `order_total_amount` trong `fact_orders` là giá trị cấp đơn hàng, lặp lại trên mỗi dòng sản phẩm — dùng `SUM(line_amount)` để tính doanh thu.
 
 ## Bảo mật
 
-`.env`, `walmart_dbt/profiles.yml` đều nằm trong `.gitignore`. Không commit token hay chuỗi kết nối.
+`.env`, `walmart_dbt/profiles.yml` đều nằm trong `.gitignore`. 
